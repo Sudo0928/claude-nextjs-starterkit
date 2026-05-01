@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, type DefaultValues } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -99,6 +99,7 @@ function LoginForm() {
           placeholder="you@example.com"
           autoComplete="email"
           aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? "login-email-error" : undefined}
           {...register("email")}
         />
       </Field>
@@ -112,6 +113,7 @@ function LoginForm() {
           type="password"
           autoComplete="current-password"
           aria-invalid={!!errors.password}
+          aria-describedby={errors.password ? "login-password-error" : undefined}
           {...register("password")}
         />
       </Field>
@@ -128,6 +130,14 @@ function LoginForm() {
   );
 }
 
+const signupDefaults: DefaultValues<SignupInput> = {
+  name: "",
+  email: "",
+  password: "",
+  confirm: "",
+  agree: undefined,
+};
+
 function SignupForm() {
   const {
     register,
@@ -136,13 +146,7 @@ function SignupForm() {
     formState: { errors, isSubmitting },
   } = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirm: "",
-      agree: false as unknown as true,
-    },
+    defaultValues: signupDefaults,
   });
 
   const onSubmit = async (data: SignupInput) => {
@@ -162,6 +166,7 @@ function SignupForm() {
           id="signup-name"
           placeholder="홍길동"
           aria-invalid={!!errors.name}
+          aria-describedby={errors.name ? "signup-name-error" : undefined}
           {...register("name")}
         />
       </Field>
@@ -171,6 +176,7 @@ function SignupForm() {
           type="email"
           placeholder="you@example.com"
           aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? "signup-email-error" : undefined}
           {...register("email")}
         />
       </Field>
@@ -183,6 +189,9 @@ function SignupForm() {
           id="signup-password"
           type="password"
           aria-invalid={!!errors.password}
+          aria-describedby={
+            errors.password ? "signup-password-error" : undefined
+          }
           {...register("password")}
         />
       </Field>
@@ -195,18 +204,30 @@ function SignupForm() {
           id="signup-confirm"
           type="password"
           aria-invalid={!!errors.confirm}
+          aria-describedby={
+            errors.confirm ? "signup-confirm-error" : undefined
+          }
           {...register("confirm")}
         />
       </Field>
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <Checkbox id="signup-agree" {...register("agree")} />
+          <Checkbox
+            id="signup-agree"
+            aria-invalid={!!errors.agree}
+            aria-describedby={errors.agree ? "signup-agree-error" : undefined}
+            {...register("agree")}
+          />
           <Label htmlFor="signup-agree" className="text-sm font-normal">
             서비스 이용 약관에 동의합니다
           </Label>
         </div>
         {errors.agree?.message ? (
-          <p className="text-destructive text-xs leading-5" role="alert">
+          <p
+            id="signup-agree-error"
+            className="text-destructive text-xs leading-5"
+            role="alert"
+          >
             {errors.agree.message}
           </p>
         ) : null}
@@ -253,6 +274,7 @@ function NewsletterForm() {
           placeholder="you@example.com"
           aria-invalid={!!errors.email}
           aria-label="이메일"
+          aria-describedby={errors.email ? "newsletter-email-error" : undefined}
           {...register("email")}
         />
         <Button type="submit" disabled={isSubmitting}>
@@ -260,7 +282,11 @@ function NewsletterForm() {
         </Button>
       </div>
       {errors.email?.message ? (
-        <p className="text-destructive text-xs leading-5" role="alert">
+        <p
+          id="newsletter-email-error"
+          className="text-destructive text-xs leading-5"
+          role="alert"
+        >
           {errors.email.message}
         </p>
       ) : null}
@@ -281,7 +307,11 @@ function Field({ id, label, error, children }: FieldProps) {
       <Label htmlFor={id}>{label}</Label>
       {children}
       {error ? (
-        <p className={cn("text-destructive text-xs leading-5")} role="alert">
+        <p
+          id={`${id}-error`}
+          className={cn("text-destructive text-xs leading-5")}
+          role="alert"
+        >
           {error}
         </p>
       ) : null}

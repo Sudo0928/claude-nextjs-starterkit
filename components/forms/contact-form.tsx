@@ -34,49 +34,37 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-      <Field
-        id="name"
-        label="이름"
-        error={errors.name?.message}
-        input={
-          <Input
-            id="name"
-            placeholder="홍길동"
-            autoComplete="name"
-            aria-invalid={!!errors.name}
-            {...register("name")}
-          />
-        }
-      />
-      <Field
-        id="email"
-        label="이메일"
-        error={errors.email?.message}
-        input={
-          <Input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            autoComplete="email"
-            aria-invalid={!!errors.email}
-            {...register("email")}
-          />
-        }
-      />
-      <Field
-        id="message"
-        label="문의 내용"
-        error={errors.message?.message}
-        input={
-          <Textarea
-            id="message"
-            rows={6}
-            placeholder="어떤 도움이 필요하신가요?"
-            aria-invalid={!!errors.message}
-            {...register("message")}
-          />
-        }
-      />
+      <Field id="name" label="이름" error={errors.name?.message}>
+        <Input
+          id="name"
+          placeholder="홍길동"
+          autoComplete="name"
+          aria-invalid={!!errors.name}
+          aria-describedby={errors.name ? "name-error" : undefined}
+          {...register("name")}
+        />
+      </Field>
+      <Field id="email" label="이메일" error={errors.email?.message}>
+        <Input
+          id="email"
+          type="email"
+          placeholder="you@example.com"
+          autoComplete="email"
+          aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? "email-error" : undefined}
+          {...register("email")}
+        />
+      </Field>
+      <Field id="message" label="문의 내용" error={errors.message?.message}>
+        <Textarea
+          id="message"
+          rows={6}
+          placeholder="어떤 도움이 필요하신가요?"
+          aria-invalid={!!errors.message}
+          aria-describedby={errors.message ? "message-error" : undefined}
+          {...register("message")}
+        />
+      </Field>
       <Button type="submit" size="lg" disabled={isSubmitting} className="w-full sm:w-auto">
         {isSubmitting ? (
           <>
@@ -95,15 +83,15 @@ export function ContactForm() {
 type FieldProps = {
   id: string;
   label: string;
-  input: React.ReactNode;
+  children: React.ReactNode;
   error?: string;
 };
 
-function Field({ id, label, input, error }: FieldProps) {
+function Field({ id, label, children, error }: FieldProps) {
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
-      {input}
+      {children}
       {error ? (
         <p
           id={`${id}-error`}

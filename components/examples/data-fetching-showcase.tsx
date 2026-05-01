@@ -21,39 +21,47 @@ export function DataFetchingShowcase() {
   );
 }
 
+type Result = { mode: Mode; data: Post[] | null; error: string | null };
+
 function FetchExample() {
   const [mode, setMode] = useState<Mode>("ok");
-  const [data, setData] = useState<Post[] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<Result | null>(null);
 
-  const load = async (next: Mode) => {
-    setMode(next);
-    setLoading(true);
-    setError(null);
-    setData(null);
-    await new Promise((r) => setTimeout(r, 800));
-    if (next === "error") {
-      setError("요청에 실패했습니다. 다시 시도해 주세요.");
-      setLoading(false);
-      return;
-    }
-    if (next === "empty") {
-      setData([]);
-      setLoading(false);
-      return;
-    }
-    setData([
-      { id: 1, title: "첫 번째 게시글", body: "fetch + Skeleton 패턴 데모" },
-      { id: 2, title: "두 번째 게시글", body: "에러 처리는 Alert 컴포넌트로" },
-      { id: 3, title: "세 번째 게시글", body: "빈 상태도 명시적으로 표시" },
-    ]);
-    setLoading(false);
-  };
+  // 로딩 상태는 "현재 mode 와 마지막 응답의 mode 가 다른지" 로 파생.
+  // effect 안에서 동기 setState 를 호출하지 않아 cascading render 를 피한다.
+  const loading = result?.mode !== mode;
+  const data = loading ? null : result?.data ?? null;
+  const error = loading ? null : result?.error ?? null;
 
   useEffect(() => {
-    load("ok");
-  }, []);
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      if (cancelled) return;
+      if (mode === "error") {
+        setResult({
+          mode,
+          data: null,
+          error: "요청에 실패했습니다. 다시 시도해 주세요.",
+        });
+      } else if (mode === "empty") {
+        setResult({ mode, data: [], error: null });
+      } else {
+        setResult({
+          mode,
+          data: [
+            { id: 1, title: "첫 번째 게시글", body: "fetch + Skeleton 패턴 데모" },
+            { id: 2, title: "두 번째 게시글", body: "에러 처리는 Alert 컴포넌트로" },
+            { id: 3, title: "세 번째 게시글", body: "빈 상태도 명시적으로 표시" },
+          ],
+          error: null,
+        });
+      }
+    }, 800);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [mode]);
 
   return (
     <ShowcaseSection
@@ -68,21 +76,21 @@ const [error, setError] = useState<string | null>(null);`}
           <Button
             size="sm"
             variant={mode === "ok" ? "default" : "outline"}
-            onClick={() => load("ok")}
+            onClick={() => setMode("ok")}
           >
             <RefreshCw /> 정상 응답
           </Button>
           <Button
             size="sm"
             variant={mode === "empty" ? "default" : "outline"}
-            onClick={() => load("empty")}
+            onClick={() => setMode("empty")}
           >
             빈 결과
           </Button>
           <Button
             size="sm"
             variant={mode === "error" ? "default" : "outline"}
-            onClick={() => load("error")}
+            onClick={() => setMode("error")}
           >
             에러 발생
           </Button>
